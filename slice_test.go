@@ -44,3 +44,26 @@ func TestSliceMap(t *testing.T) {
 		})
 	}
 }
+
+func TestSliceMapCallsFnOncePerElementInOrder(t *testing.T) {
+	data := []int{6, 1, 44}
+
+	var seen []int
+	r := riffle.From(data).Map(func(i int) int {
+		seen = append(seen, i)
+		return i * 10
+	})
+
+	test.Eq(t, data, seen)
+	test.Eq(t, riffle.Slice[int]{60, 10, 440}, r)
+}
+
+func TestSliceMapDoesNotCallFnOnEmpty(t *testing.T) {
+	calls := 0
+	riffle.From([]int{}).Map(func(int) int {
+		calls++
+		return 0
+	})
+
+	test.Eq(t, 0, calls)
+}
