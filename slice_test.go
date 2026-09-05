@@ -12,7 +12,6 @@ func TestSliceMap(t *testing.T) {
 	cases := map[string]struct {
 		data     []int
 		expected riffle.Slice[float64]
-		fn       func(int) float64
 	}{
 		"nil slice": {
 			data:     nil,
