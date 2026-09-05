@@ -23,3 +23,19 @@ func (s Slice[T]) Map[R any](fn func(T) R) Slice[R] {
 
 	return r
 }
+
+func (s Slice[T]) Filter(fn func(T) bool) Slice[T] {
+	r := make(Slice[T], 0, len(s))
+
+	for i := range s {
+		if fn(s[i]) {
+			r = append(r, s[i])
+		}
+	}
+
+	if len(r) == 0 {
+		return nil
+	}
+
+	return r
+}
