@@ -132,3 +132,37 @@ func BenchmarkFlatMap(b *testing.B) {
 		})
 	}
 }
+
+func BenchmarkChain(b *testing.B) {
+	for _, n := range sizes {
+		xs := input(n)
+		b.Run(fmt.Sprintf("loop/%d", n), func(b *testing.B) {
+			for b.Loop() {
+				v, ok := 0, false
+				for _, x := range xs {
+					x = double(x)
+					if !even(x) {
+						continue
+					}
+					x = double(x)
+					if !ok {
+						v, ok = x, true
+					} else {
+						v = add(v, x)
+					}
+				}
+				sink = v
+			}
+		})
+		b.Run(fmt.Sprintf("slice/%d", n), func(b *testing.B) {
+			for b.Loop() {
+				sink, _ = riffle.From(xs).Map(double).Filter(even).Map(double).Reduce(add)
+			}
+		})
+		b.Run(fmt.Sprintf("seq/%d", n), func(b *testing.B) {
+			for b.Loop() {
+				sink, _ = riffle.From(xs).Seq().Map(double).Filter(even).Map(double).Reduce(add)
+			}
+		})
+	}
+}
