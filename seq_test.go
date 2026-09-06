@@ -1,6 +1,8 @@
 package riffle_test
 
 import (
+	"iter"
+	"slices"
 	"strconv"
 	"testing"
 
@@ -170,4 +172,72 @@ func TestFoldMatchesSlice(t *testing.T) {
 
 		test.Eq(t, eager, lazy)
 	})
+}
+
+func TestFlatMapMatchesSlice(t *testing.T) {
+	rapid.Check(t, func(t *rapid.T) {
+		xs := rapid.SliceOf(rapid.Int()).Draw(t, "xs")
+
+		fn := func(i int) []string {
+			v := strconv.FormatInt(int64(i), 10)
+
+			return []string{v, v + "asd"}
+		}
+		eager := riffle.From(xs).FlatMap(fn)
+		lazy := riffle.From(xs).Seq().FlatMap(fn).Collect()
+		lazySeq := riffle.From(xs).Seq().FlatMapSeq(func(i int) iter.Seq[string] {
+			return slices.Values(fn(i))
+		}).Collect()
+
+		test.Eq(t, eager, lazy)
+		test.Eq(t, eager, lazySeq)
+	})
+}
+
+func TestSeqFlatMapDoesNotCallFnUntilConsumed(t *testing.T) {
+	calls := 0
+	riffle.Of(1, 2, 3).Seq().FlatMap(func(i int) []int {
+		calls++
+		return []int{i, i}
+	})
+	test.Eq(t, 0, calls)
+}
+
+func TestSeqFlatMapStopsWhenConsumerStops(t *testing.T) {
+	var seen, got []int
+	for v := range riffle.Of(1, 2, 3).Seq().FlatMap(func(i int) []int {
+		seen = append(seen, i)
+		return []int{i, i * 10}
+	}) {
+		got = append(got, v)
+		if len(got) == 3 {
+			break
+		}
+	}
+	test.Eq(t, []int{1, 2}, seen)
+	test.Eq(t, []int{1, 10, 2}, got)
+}
+
+func TestSeqFlatMapSeqStopsInnerWhenConsumerStops(t *testing.T) {
+	var seen, got []int
+	innerPulls := 0
+	for v := range riffle.Of(1, 2, 3).Seq().FlatMapSeq(func(i int) riffle.Seq[int] {
+		seen = append(seen, i)
+		return func(yield func(int) bool) {
+			for n := 0; ; n++ {
+				innerPulls++
+				if !yield(i*10 + n) {
+					return
+				}
+			}
+		}
+	}) {
+		got = append(got, v)
+		if len(got) == 2 {
+			break
+		}
+	}
+	test.Eq(t, []int{1}, seen)
+	test.Eq(t, 2, innerPulls)
+	test.Eq(t, []int{10, 11}, got)
 }

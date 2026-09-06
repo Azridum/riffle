@@ -61,3 +61,27 @@ func (s Seq[T]) Fold[R any](init R, fn func(R, T) R) R {
 
 	return init
 }
+
+func (s Seq[T]) FlatMap[R any, S ~[]R](fn func(T) S) Seq[R] {
+	return func(yield func(R) bool) {
+		for v := range s {
+			for _, r := range fn(v) {
+				if !yield(r) {
+					return
+				}
+			}
+		}
+	}
+}
+
+func (s Seq[T]) FlatMapSeq[R any, S ~func(yield func(R) bool)](fn func(T) S) Seq[R] {
+	return func(yield func(R) bool) {
+		for v := range s {
+			for r := range fn(v) {
+				if !yield(r) {
+					return
+				}
+			}
+		}
+	}
+}
