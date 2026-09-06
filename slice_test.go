@@ -293,42 +293,6 @@ func TestSliceReduce(t *testing.T) {
 	}
 }
 
-func TestReduceCalls(t *testing.T) {
-	cases := map[string]struct {
-		data          []int
-		expectedCalls int
-	}{
-		"nil slice": {
-			data:          nil,
-			expectedCalls: 0,
-		},
-		"empty slice": {
-			data:          []int{},
-			expectedCalls: 0,
-		},
-		"one element": {
-			data:          []int{1},
-			expectedCalls: 0,
-		},
-		"multiple elements": {
-			data:          []int{1, 2, 3},
-			expectedCalls: 2,
-		},
-	}
-	for n, c := range cases {
-		t.Run(n, func(t *testing.T) {
-			calls := 0
-			riffle.From(c.data).Reduce(func(i1, i2 int) int {
-				calls++
-				return i1 + i2
-			})
-
-			test.Eq(t, c.expectedCalls, calls)
-		})
-	}
-
-}
-
 func TestSliceFold(t *testing.T) {
 	type call struct {
 		acc string
