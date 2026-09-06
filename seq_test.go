@@ -1,6 +1,7 @@
 package riffle_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/Azridum/riffle"
@@ -153,6 +154,20 @@ func TestReduceMatchesSlice(t *testing.T) {
 		lazy, lazyOk := riffle.From(xs).Seq().Reduce(fn)
 
 		test.Eq(t, eagerOk, lazyOk)
+		test.Eq(t, eager, lazy)
+	})
+}
+
+func TestFoldMatchesSlice(t *testing.T) {
+	rapid.Check(t, func(t *rapid.T) {
+		xs := rapid.SliceOf(rapid.Int()).Draw(t, "xs")
+
+		fn := func(acc string, v int) string {
+			return acc + strconv.FormatInt(int64(v), 10)
+		}
+		eager := riffle.From(xs).Fold("asd", fn)
+		lazy := riffle.From(xs).Seq().Fold("asd", fn)
+
 		test.Eq(t, eager, lazy)
 	})
 }

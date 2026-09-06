@@ -53,3 +53,11 @@ func (s Seq[T]) Reduce(fn func(T, T) T) (T, bool) {
 
 	return r, ok
 }
+
+func (s Seq[T]) Fold[R any](init R, fn func(R, T) R) R {
+	for v := range s {
+		init = fn(init, v)
+	}
+
+	return init
+}
