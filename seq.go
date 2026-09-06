@@ -20,3 +20,15 @@ func (s Seq[T]) Map[R any](fn func(T) R) Seq[R] {
 		}
 	}
 }
+
+func (s Seq[T]) Filter(fn func(T) bool) Seq[T] {
+	return func(yield func(T) bool) {
+		for v := range s {
+			if fn(v) {
+				if !yield(v) {
+					return
+				}
+			}
+		}
+	}
+}
