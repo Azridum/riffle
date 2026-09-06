@@ -63,3 +63,17 @@ func (s Slice[T]) Last() (T, bool) {
 
 	return s[len(s)-1], true
 }
+
+func (s Slice[T]) Reduce(fn func(T, T) T) (T, bool) {
+	if len(s) == 0 {
+		var zero T
+		return zero, false
+	}
+	v := s[0]
+	values := s[1:]
+	for i := range values {
+		v = fn(v, values[i])
+	}
+
+	return v, true
+}
