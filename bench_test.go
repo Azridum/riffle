@@ -8,6 +8,7 @@ import (
 )
 
 var sizes = []int{10, 1_000, 100_000}
+var sink int
 
 func input(n int) []int {
 	xs := make([]int, n)
@@ -17,8 +18,9 @@ func input(n int) []int {
 	return xs
 }
 
-func double(i int) int { return i * 2 }
-func even(i int) bool  { return i%2 == 0 }
+func double(i int) int   { return i * 2 }
+func even(i int) bool    { return i%2 == 0 }
+func add(i1, i2 int) int { return i1 + i2 }
 
 func BenchmarkMap(b *testing.B) {
 	for _, n := range sizes {
@@ -72,6 +74,31 @@ func BenchmarkFilter(b *testing.B) {
 		b.Run(fmt.Sprintf("seq/%d", n), func(b *testing.B) {
 			for b.Loop() {
 				riffle.From(xs).Seq().Filter(even).Collect()
+			}
+		})
+	}
+}
+
+func BenchmarkReduce(b *testing.B) {
+	for _, n := range sizes {
+		xs := input(n)
+		b.Run(fmt.Sprintf("loop/%d", n), func(b *testing.B) {
+			for b.Loop() {
+				v := xs[0]
+				for _, x := range xs[1:] {
+					v = add(v, x)
+				}
+				sink = v
+			}
+		})
+		b.Run(fmt.Sprintf("slice/%d", n), func(b *testing.B) {
+			for b.Loop() {
+				sink, _ = riffle.From(xs).Reduce(add)
+			}
+		})
+		b.Run(fmt.Sprintf("seq/%d", n), func(b *testing.B) {
+			for b.Loop() {
+				sink, _ = riffle.From(xs).Seq().Reduce(add)
 			}
 		})
 	}

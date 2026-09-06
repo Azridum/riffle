@@ -39,3 +39,17 @@ func (s Seq[T]) First() (T, bool) {
 	var zero T
 	return zero, false
 }
+
+func (s Seq[T]) Reduce(fn func(T, T) T) (T, bool) {
+	var r T
+	ok := false
+	for v := range s {
+		if !ok {
+			r, ok = v, true
+		} else {
+			r = fn(r, v)
+		}
+	}
+
+	return r, ok
+}

@@ -141,3 +141,18 @@ func TestFirstMatchesSlice(t *testing.T) {
 		test.Eq(t, eager, lazy)
 	})
 }
+
+func TestReduceMatchesSlice(t *testing.T) {
+	rapid.Check(t, func(t *rapid.T) {
+		xs := rapid.SliceOf(rapid.Int()).Draw(t, "xs")
+
+		fn := func(i1, i2 int) int {
+			return i1*10 + i2
+		}
+		eager, eagerOk := riffle.From(xs).Reduce(fn)
+		lazy, lazyOk := riffle.From(xs).Seq().Reduce(fn)
+
+		test.Eq(t, eagerOk, lazyOk)
+		test.Eq(t, eager, lazy)
+	})
+}
