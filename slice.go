@@ -39,3 +39,12 @@ func (s Slice[T]) Filter(fn func(T) bool) Slice[T] {
 
 	return r
 }
+
+func (s Slice[T]) First() (T, bool) {
+	if len(s) == 0 {
+		var v T
+		return v, false
+	}
+
+	return s[0], true
+}

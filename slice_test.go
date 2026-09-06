@@ -157,3 +157,45 @@ func TestSliceFilterDoesNotCallFnOnEmpty(t *testing.T) {
 
 	test.Eq(t, 0, calls)
 }
+
+func TestSliceFirst(t *testing.T) {
+	cases := map[string]struct {
+		data       []int
+		expected   int
+		expectedOk bool
+	}{
+		"nil slice": {
+			data:       nil,
+			expected:   0,
+			expectedOk: false,
+		},
+		"empty slice": {
+			data:       []int{},
+			expected:   0,
+			expectedOk: false,
+		},
+		"one element": {
+			data:       []int{10},
+			expected:   10,
+			expectedOk: true,
+		},
+		"multiple elements": {
+			data:       []int{11, 12, 13},
+			expected:   11,
+			expectedOk: true,
+		},
+		"first element is zero": {
+			data:       []int{0, 12, 13},
+			expected:   0,
+			expectedOk: true,
+		},
+	}
+
+	for n, c := range cases {
+		t.Run(n, func(t *testing.T) {
+			v, ok := riffle.From(c.data).First()
+			test.Eq(t, c.expected, v)
+			test.Eq(t, c.expectedOk, ok)
+		})
+	}
+}
