@@ -48,3 +48,12 @@ func (s Slice[T]) First() (T, bool) {
 
 	return s[0], true
 }
+
+func (s Slice[T]) Last() (T, bool) {
+	if len(s) == 0 {
+		var v T
+		return v, false
+	}
+
+	return s[len(s)-1], true
+}
