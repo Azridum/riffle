@@ -243,7 +243,7 @@ func TestSliceLast(t *testing.T) {
 	}
 }
 
-func TestReduceSlice(t *testing.T) {
+func TestSliceReduce(t *testing.T) {
 	cases := map[string]struct {
 		data       []int
 		expected   int
