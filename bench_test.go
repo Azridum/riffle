@@ -22,6 +22,10 @@ func double(i int) int   { return i * 2 }
 func even(i int) bool    { return i%2 == 0 }
 func add(i1, i2 int) int { return i1 + i2 }
 
+var pair = [2]int{1, 2}
+
+func two(int) []int { return pair[:] }
+
 func BenchmarkMap(b *testing.B) {
 	for _, n := range sizes {
 		xs := input(n)
@@ -99,6 +103,31 @@ func BenchmarkReduce(b *testing.B) {
 		b.Run(fmt.Sprintf("seq/%d", n), func(b *testing.B) {
 			for b.Loop() {
 				sink, _ = riffle.From(xs).Seq().Reduce(add)
+			}
+		})
+	}
+}
+
+func BenchmarkFlatMap(b *testing.B) {
+	for _, n := range sizes {
+		xs := input(n)
+		b.Run(fmt.Sprintf("loop/%d", n), func(b *testing.B) {
+			for b.Loop() {
+				r := make([]int, 0, len(xs))
+				for _, x := range xs {
+					r = append(r, two(x)...)
+					_ = r
+				}
+			}
+		})
+		b.Run(fmt.Sprintf("slice/%d", n), func(b *testing.B) {
+			for b.Loop() {
+				riffle.From(xs).FlatMap(two)
+			}
+		})
+		b.Run(fmt.Sprintf("seq/%d", n), func(b *testing.B) {
+			for b.Loop() {
+				riffle.From(xs).Seq().FlatMap(two).Collect()
 			}
 		})
 	}
