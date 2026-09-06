@@ -20,3 +20,25 @@ func TestMapMatchesSlice(t *testing.T) {
 
 	})
 }
+
+func TestSeqMapDoesNotCallFnUntilConsumed(t *testing.T) {
+	calls := 0
+	riffle.Of(1, 2, 3).Seq().Map(func(i int) int {
+		calls++
+		return i
+	})
+
+	test.Eq(t, 0, calls)
+}
+
+func TestSeqMapStopsWhenConsumerStops(t *testing.T) {
+	calls := 0
+	for range riffle.Of(1, 2, 3).Seq().Map(func(i int) int {
+		calls++
+		return i
+	}) {
+		break
+	}
+
+	test.Eq(t, 1, calls)
+}
