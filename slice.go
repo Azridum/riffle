@@ -1,5 +1,7 @@
 package riffle
 
+import "slices"
+
 type Slice[T any] []T
 
 func From[T any](data []T) Slice[T] {
@@ -8,6 +10,10 @@ func From[T any](data []T) Slice[T] {
 
 func Of[T any](data ...T) Slice[T] {
 	return data
+}
+
+func (s Slice[T]) Seq() Seq[T] {
+	return Seq[T](slices.Values(s))
 }
 
 func (s Slice[T]) Map[R any](fn func(T) R) Slice[R] {
