@@ -74,7 +74,7 @@ func (s Seq[T]) FlatMap[R any, S ~[]R](fn func(T) S) Seq[R] {
 	}
 }
 
-func (s Seq[T]) FlatMapSeq[R any, S ~func(yield func(R) bool)](fn func(T) S) Seq[R] {
+func (s Seq[T]) FlatMapSeq[R any, S ~func(func(R) bool)](fn func(T) S) Seq[R] {
 	return func(yield func(R) bool) {
 		for v := range s {
 			for r := range fn(v) {
