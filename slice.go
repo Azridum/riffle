@@ -77,3 +77,11 @@ func (s Slice[T]) Reduce(fn func(T, T) T) (T, bool) {
 
 	return v, true
 }
+
+func (s Slice[T]) Fold[R any](init R, fn func(R, T) R) R {
+	for i := range s {
+		init = fn(init, s[i])
+	}
+
+	return init
+}

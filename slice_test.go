@@ -2,6 +2,7 @@ package riffle_test
 
 import (
 	"slices"
+	"strconv"
 	"testing"
 
 	"github.com/Azridum/riffle"
@@ -326,4 +327,103 @@ func TestReduceCalls(t *testing.T) {
 		})
 	}
 
+}
+
+func TestSliceFold(t *testing.T) {
+	type call struct {
+		acc string
+		v   int
+	}
+
+	cases := map[string]struct {
+		data     []int
+		init     string
+		expected string
+		seen     []call
+	}{
+		"nil slice": {
+			data:     nil,
+			init:     "1",
+			expected: "1",
+		},
+		"empty slice": {
+			data:     []int{},
+			init:     "1",
+			expected: "1",
+		},
+		"one element empty init": {
+			data:     []int{2},
+			init:     "",
+			expected: "2",
+			seen: []call{
+				{
+					acc: "",
+					v:   2,
+				},
+			},
+		},
+		"one element not empty init": {
+			data:     []int{2},
+			init:     "1",
+			expected: "12",
+			seen: []call{
+				{
+					acc: "1",
+					v:   2,
+				},
+			},
+		},
+		"multiple elements empty init": {
+			data:     []int{2, 3, 4},
+			init:     "",
+			expected: "234",
+			seen: []call{
+				{
+					acc: "",
+					v:   2,
+				},
+				{
+					acc: "2",
+					v:   3,
+				},
+				{
+					acc: "23",
+					v:   4,
+				},
+			},
+		},
+		"multiple elements not empty init": {
+			data:     []int{2, 3, 4},
+			init:     "1",
+			expected: "1234",
+			seen: []call{
+				{
+					acc: "1",
+					v:   2,
+				},
+				{
+					acc: "12",
+					v:   3,
+				},
+				{
+					acc: "123",
+					v:   4,
+				},
+			},
+		},
+	}
+
+	for n, c := range cases {
+		t.Run(n, func(t *testing.T) {
+			var seen []call
+			test.Eq(t, c.expected, riffle.From(c.data).Fold(c.init, func(acc string, v int) string {
+				seen = append(seen, struct {
+					acc string
+					v   int
+				}{acc: acc, v: v})
+				return acc + strconv.FormatInt(int64(v), 10)
+			}))
+			test.Eq(t, c.seen, seen)
+		})
+	}
 }
