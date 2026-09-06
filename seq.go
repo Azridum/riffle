@@ -30,3 +30,12 @@ func (s Seq[T]) Filter(fn func(T) bool) Seq[T] {
 		}
 	}
 }
+
+func (s Seq[T]) First() (T, bool) {
+	for v := range s {
+		return v, true
+	}
+
+	var zero T
+	return zero, false
+}
