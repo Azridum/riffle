@@ -85,3 +85,18 @@ func (s Slice[T]) Fold[R any](init R, fn func(R, T) R) R {
 
 	return init
 }
+
+func (s Slice[T]) FlatMap[R any, S ~[]R](fn func(T) S) Slice[R] {
+	r := make(Slice[R], 0, len(s))
+
+	for i := range s {
+		o := fn(s[i])
+		r = append(r, o...)
+	}
+
+	if len(r) == 0 {
+		return nil
+	}
+
+	return r
+}

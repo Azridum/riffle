@@ -3,6 +3,7 @@ package riffle_test
 import (
 	"slices"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/Azridum/riffle"
@@ -381,13 +382,84 @@ func TestSliceFold(t *testing.T) {
 		t.Run(n, func(t *testing.T) {
 			var seen []call
 			test.Eq(t, c.expected, riffle.From(c.data).Fold(c.init, func(acc string, v int) string {
-				seen = append(seen, struct {
-					acc string
-					v   int
-				}{acc: acc, v: v})
+				seen = append(seen, call{
+					acc: acc, v: v,
+				})
 				return acc + strconv.FormatInt(int64(v), 10)
 			}))
 			test.Eq(t, c.seen, seen)
 		})
 	}
+}
+
+func TestSliceFlatMap(t *testing.T) {
+	cases := map[string]struct {
+		data         []int
+		callResults  []riffle.Slice[string]
+		expected     riffle.Slice[string]
+		expectedSeen []int
+	}{
+		"nil slice": {
+			data:     nil,
+			expected: nil,
+		},
+		"empty slice": {
+			data:     []int{},
+			expected: nil,
+		},
+		"one element": {
+			data: []int{1},
+			callResults: []riffle.Slice[string]{
+				{"1", "1"},
+			},
+			expected:     []string{"1", "1"},
+			expectedSeen: []int{1},
+		},
+		"multiple elements": {
+			data: []int{1, 2, 3},
+			callResults: []riffle.Slice[string]{
+				{"1", "1"},
+				{"2", "2"},
+				{"3", "3"},
+			},
+			expected:     []string{"1", "1", "2", "2", "3", "3"},
+			expectedSeen: []int{1, 2, 3},
+		},
+		"multiple elements some results empty": {
+			data: []int{1, 2, 3},
+			callResults: []riffle.Slice[string]{
+				{"1", "1"},
+				nil,
+				{},
+			},
+			expected:     []string{"1", "1"},
+			expectedSeen: []int{1, 2, 3},
+		},
+		"all results empty": {
+			data: []int{1, 2, 3},
+			callResults: []riffle.Slice[string]{
+				nil,
+				nil,
+				nil,
+			},
+			expected:     nil,
+			expectedSeen: []int{1, 2, 3},
+		},
+	}
+
+	for n, c := range cases {
+		t.Run(n, func(t *testing.T) {
+			var seen []int
+			test.Eq(t, c.expected, riffle.From(c.data).FlatMap(func(i int) riffle.Slice[string] {
+				seen = append(seen, i)
+				return c.callResults[len(seen)-1]
+			}))
+			test.Eq(t, c.expectedSeen, seen)
+		})
+	}
+}
+
+func TestSliceFlatMapAcceptsPlainSliceFn(t *testing.T) {
+	r := riffle.Of("a b", "c").FlatMap(strings.Fields)
+	test.Eq(t, riffle.Slice[string]{"a", "b", "c"}, r)
 }
