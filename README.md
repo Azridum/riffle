@@ -3,7 +3,7 @@
 [![test](https://github.com/Azridum/riffle/actions/workflows/test.yml/badge.svg)](https://github.com/Azridum/riffle/actions/workflows/test.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/Azridum/riffle.svg)](https://pkg.go.dev/github.com/Azridum/riffle)
 
-Chainable, generic `Map` / `Filter` / `Reduce` / `Fold` / `FlatMap` for Go slices and iterators. Two flavours with the same API:
+Chainable, generic `Map` / `Filter` / `Reduce` / `Fold` / `FlatMap` / `GroupBy` for Go slices and iterators. Two flavours with the same API:
 
 | Type | Evaluation | Use when |
 |------|-----------|----------|
@@ -34,6 +34,11 @@ first, ok := riffle.From(bigSlice).
     Filter(func(x int) bool { return x > 100 }).
     First()
 
+// Group into a map; each group keeps input order
+byLen := riffle.Of("go", "rust", "zig", "odin").
+    GroupBy(func(s string) int { return len(s) })
+// map[int]riffle.Slice[string]{2: {"go"}, 3: {"zig"}, 4: {"rust", "odin"}}
+
 // Seq is an iter.Seq: range over it directly
 for v := range riffle.From(xs).Seq().Filter(pred) {
     fmt.Println(v)
@@ -58,6 +63,7 @@ Available on both `Slice[T]` and `Seq[T]` unless noted.
 | `Last() (T, bool)` | `Slice` only |
 | `Reduce(func(T, T) T) (T, bool)` | fold seeded with first element; false when empty |
 | `Fold(init R, func(R, T) R) R` | fold with explicit seed and accumulator type |
+| `GroupBy(func(T) K) map[K]Slice[T]` with `K comparable` | partition by key; groups keep input order |
 | `Seq()` | `Slice` only. Lazy view |
 | `Collect() Slice[T]` | `Seq` only. Drain to slice |
 
@@ -65,7 +71,7 @@ Constructors: `riffle.From([]T)` wraps without copying, `riffle.Of(a, b, c)` bui
 
 ## Semantics worth knowing
 
-- **Empty results are `nil`**, not `[]T{}`. `Map`, `Filter`, `FlatMap` and `Collect` all return `nil` when there is nothing to return.
+- **Empty results are `nil`**, not `[]T{}`. `Map`, `Filter`, `FlatMap` and `Collect` all return `nil` when there is nothing to return. `GroupBy` returns a `nil` map on empty input; indexing it is fine, writing to it is not.
 - **`Slice` and `Seq` always agree.** Every op is property-tested so that `s.Op(f)` equals `s.Seq().Op(f).Collect()`.
 - **`Seq` is fully lazy.** Building a chain calls none of your functions. Consumers that stop early (`First`, `break` in a range loop) stop every upstream stage.
 - **`Seq` is re-iterable.** Each consumption re-runs the pipeline from the source. Not safe for concurrent use unless the source is.
