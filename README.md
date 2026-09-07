@@ -1,0 +1,81 @@
+# riffle
+
+Chainable, generic `Map` / `Filter` / `Reduce` / `Fold` / `FlatMap` for Go slices and iterators. Two flavours with the same API:
+
+| Type | Evaluation | Use when |
+|------|-----------|----------|
+| `Slice[T]` | eager, one allocation per step | small data, want a slice back |
+| `Seq[T]` | lazy, wraps `iter.Seq[T]` | long chains, big inputs, early exit |
+
+Requires Go 1.27+ (uses generic methods).
+
+```sh
+go get github.com/Azridum/riffle
+```
+
+## Usage
+
+```go
+import "github.com/Azridum/riffle"
+
+// Eager
+evens := riffle.Of(1, 2, 3, 4, 5, 6).
+    Filter(func(i int) bool { return i%2 == 0 }).
+    Map(func(i int) string { return strconv.Itoa(i) })
+// riffle.Slice[string]{"2", "4", "6"}
+
+// Lazy: nothing runs until First() pulls; stops after the 2nd element
+first, ok := riffle.From(bigSlice).
+    Seq().
+    Map(expensive).
+    Filter(func(x int) bool { return x > 100 }).
+    First()
+
+// Seq is an iter.Seq: range over it directly
+for v := range riffle.From(xs).Seq().Filter(pred) {
+    fmt.Println(v)
+}
+
+// Convert between them
+s.Seq()       // Slice -> Seq (no copy, reads s at iteration time)
+seq.Collect() // Seq -> Slice
+```
+
+## API
+
+Available on both `Slice[T]` and `Seq[T]` unless noted.
+
+| Method | Description |
+|--------|-------------|
+| `Map(func(T) R) ...[R]` | transform each element |
+| `Filter(func(T) bool)` | keep elements where fn is true |
+| `FlatMap(func(T) S) ...[R]` with `S ~[]R` | map to slices, concatenate |
+| `FlatMapSeq(func(T) S)` with `S ~func(func(R) bool)` | `Seq` only. Map to iterators, flatten lazily |
+| `First() (T, bool)` | first element. `Seq` pulls exactly one |
+| `Last() (T, bool)` | `Slice` only |
+| `Reduce(func(T, T) T) (T, bool)` | fold seeded with first element; false when empty |
+| `Fold(init R, func(R, T) R) R` | fold with explicit seed and accumulator type |
+| `Seq()` | `Slice` only. Lazy view |
+| `Collect() Slice[T]` | `Seq` only. Drain to slice |
+
+Constructors: `riffle.From([]T)` wraps without copying, `riffle.Of(a, b, c)` builds from arguments.
+
+## Semantics worth knowing
+
+- **Empty results are `nil`**, not `[]T{}`. `Map`, `Filter`, `FlatMap` and `Collect` all return `nil` when there is nothing to return.
+- **`Slice` and `Seq` always agree.** Every op is property-tested so that `s.Op(f)` equals `s.Seq().Op(f).Collect()`.
+- **`Seq` is fully lazy.** Building a chain calls none of your functions. Consumers that stop early (`First`, `break` in a range loop) stop every upstream stage.
+- **`Seq` is re-iterable.** Each consumption re-runs the pipeline from the source. Not safe for concurrent use unless the source is.
+- **`From` does not copy.** Mutating the input afterwards is visible through the `Slice` and through any `Seq` built from it.
+- **`Reduce` vs `Fold`.** `Reduce` seeds from the first element and reports `false` on empty input. `Fold` takes an explicit seed, can change type, and returns the seed on empty input.
+
+## Development
+
+```sh
+go test ./...                            # unit + property tests (pgregory.net/rapid)
+go test -bench . -run '^$' -benchmem     # loop vs slice vs seq benchmarks
+```
+
+## License
+
+MIT, see [LICENSE](LICENSE).
