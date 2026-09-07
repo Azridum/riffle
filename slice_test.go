@@ -8,6 +8,7 @@ import (
 
 	"github.com/Azridum/riffle"
 	"github.com/shoenig/test"
+	"pgregory.net/rapid"
 )
 
 func TestSliceMap(t *testing.T) {
@@ -559,4 +560,22 @@ func TestSliceGroupBy(t *testing.T) {
 			test.Eq(t, c.expected, r)
 		})
 	}
+}
+
+func TestGroupByIsAPartition(t *testing.T) {
+	rapid.Check(t, func(t *rapid.T) {
+		xs := rapid.SliceOf(rapid.Int()).Draw(t, "xs")
+		key := func(i int) int { return i % 3 }
+
+		groups := riffle.From(xs).GroupBy(key)
+
+		total := 0
+		for k, g := range groups {
+			total += len(g)
+			for _, v := range g {
+				test.Eq(t, k, key(v))
+			}
+		}
+		test.Eq(t, len(xs), total)
+	})
 }
