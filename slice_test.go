@@ -463,3 +463,100 @@ func TestSliceFlatMapAcceptsPlainSliceFn(t *testing.T) {
 	r := riffle.Of("a b", "c").FlatMap(strings.Fields)
 	test.Eq(t, riffle.Slice[string]{"a", "b", "c"}, r)
 }
+
+func TestSliceGroupBy(t *testing.T) {
+	type data struct {
+		id   int
+		name string
+	}
+
+	cases := map[string]struct {
+		data     []data
+		expected map[int]riffle.Slice[data]
+	}{
+		"nil slice": {
+			data:     nil,
+			expected: nil,
+		},
+		"empty slice": {
+			data:     []data{},
+			expected: nil,
+		},
+		"one element": {
+			data: []data{
+				{
+					id:   1,
+					name: "asd",
+				},
+			},
+			expected: map[int]riffle.Slice[data]{
+				1: {
+					{
+						id:   1,
+						name: "asd",
+					},
+				},
+			},
+		},
+		"multiple elements same id": {
+			data: []data{
+				{
+					id:   1,
+					name: "asd",
+				},
+				{
+					id:   1,
+					name: "asdasd",
+				},
+			},
+			expected: map[int]riffle.Slice[data]{
+				1: {
+					{
+						id:   1,
+						name: "asd",
+					},
+					{
+						id:   1,
+						name: "asdasd",
+					},
+				},
+			},
+		},
+		"multiple elements different id": {
+			data: []data{
+				{
+					id:   1,
+					name: "asd",
+				},
+				{
+					id:   2,
+					name: "asdasd",
+				},
+			},
+			expected: map[int]riffle.Slice[data]{
+				1: {
+					{
+						id:   1,
+						name: "asd",
+					},
+				},
+				2: {
+					{
+						id:   2,
+						name: "asdasd",
+					},
+				},
+			},
+		},
+	}
+
+	for n, c := range cases {
+		t.Run(n, func(t *testing.T) {
+			r := riffle.From(c.data).GroupBy(func(d data) int {
+				return d.id
+			})
+
+			test.Eq(t, c.expected, r)
+		})
+	}
+}

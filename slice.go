@@ -154,3 +154,18 @@ func (s Slice[T]) FlatMap[R any, S ~[]R](fn func(T) S) Slice[R] {
 
 	return r
 }
+
+func (s Slice[T]) GroupBy[K comparable](fn func(T) K) map[K]Slice[T] {
+	if len(s) == 0 {
+		return nil
+	}
+
+	r := make(map[K]Slice[T])
+
+	for i := range s {
+		k := fn(s[i])
+		r[k] = append(r[k], s[i])
+	}
+
+	return r
+}
