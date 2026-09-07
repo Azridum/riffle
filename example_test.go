@@ -70,3 +70,29 @@ func ExampleSeq_FlatMap() {
 	fmt.Println(chars)
 	// Output: [a b c]
 }
+
+func ExampleSlice_GroupBy() {
+	byLen := riffle.Of("go", "rust", "zig", "c", "odin").
+		GroupBy(func(s string) int { return len(s) })
+
+	fmt.Println(byLen)
+	fmt.Println(byLen[4], len(byLen[7]))
+	// Output:
+	// map[1:[c] 2:[go] 3:[zig] 4:[rust odin]]
+	// [rust odin] 0
+}
+
+func ExampleSeq_GroupBy() {
+	parity := riffle.Of(1, 2, 3, 4, 5).
+		Seq().
+		Map(func(i int) int { return i * i }).
+		GroupBy(func(i int) string {
+			if i%2 == 0 {
+				return "even"
+			}
+			return "odd"
+		})
+
+	fmt.Println(parity)
+	// Output: map[even:[4 16] odd:[1 9 25]]
+}

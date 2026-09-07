@@ -155,6 +155,12 @@ func (s Slice[T]) FlatMap[R any, S ~[]R](fn func(T) S) Slice[R] {
 	return r
 }
 
+// GroupBy partitions the elements by the key fn returns for each of them.
+// Every element appears in exactly one group, and each group keeps its
+// elements in input order. fn is called once per element, in order.
+// Returns nil when s is empty.
+//
+// Each group is a freshly allocated Slice that shares no memory with s.
 func (s Slice[T]) GroupBy[K comparable](fn func(T) K) map[K]Slice[T] {
 	if len(s) == 0 {
 		return nil
