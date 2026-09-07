@@ -122,3 +122,17 @@ func (s Seq[T]) FlatMapSeq[R any, S ~func(func(R) bool)](fn func(T) S) Seq[R] {
 		}
 	}
 }
+
+func (s Seq[T]) GroupBy[K comparable](fn func(T) K) map[K]Slice[T] {
+	r := make(map[K]Slice[T])
+
+	for v := range s {
+		k := fn(v)
+		r[k] = append(r[k], v)
+	}
+	if len(r) == 0 {
+		return nil
+	}
+
+	return r
+}

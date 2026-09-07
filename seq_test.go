@@ -241,3 +241,15 @@ func TestSeqFlatMapSeqStopsInnerWhenConsumerStops(t *testing.T) {
 	test.Eq(t, 2, innerPulls)
 	test.Eq(t, []int{10, 11}, got)
 }
+
+func TestGroupByMatchesSlice(t *testing.T) {
+	rapid.Check(t, func(t *rapid.T) {
+		xs := rapid.SliceOf(rapid.Int()).Draw(t, "xs")
+		key := func(i int) int { return i % 3 }
+
+		eager := riffle.From(xs).GroupBy(key)
+		lazy := riffle.From(xs).Seq().GroupBy(key)
+
+		test.Eq(t, eager, lazy)
+	})
+}
