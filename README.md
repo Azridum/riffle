@@ -1,5 +1,8 @@
 # riffle
 
+[![test](https://github.com/Azridum/riffle/actions/workflows/test.yml/badge.svg)](https://github.com/Azridum/riffle/actions/workflows/test.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Azridum/riffle.svg)](https://pkg.go.dev/github.com/Azridum/riffle)
+
 Chainable, generic `Map` / `Filter` / `Reduce` / `Fold` / `FlatMap` for Go slices and iterators. Two flavours with the same API:
 
 | Type | Evaluation | Use when |
