@@ -205,3 +205,20 @@ func (s Slice[T]) Distinct[K comparable](fn func(T) K) Slice[T] {
 
 	return r
 }
+
+// Find returns the first element for which fn reports true, and true.
+// Returns the zero value and false when no element matches or s is empty.
+// fn is called on each element in order and stops at the first match, so
+// elements after it are never visited.
+//
+// Use [Slice.First] when no predicate is needed.
+func (s Slice[T]) Find(fn func(T) bool) (T, bool) {
+	for i := range s {
+		if fn(s[i]) {
+			return s[i], true
+		}
+	}
+
+	var zero T
+	return zero, false
+}

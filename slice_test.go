@@ -629,3 +629,65 @@ func TestDistinct(t *testing.T) {
 		})
 	}
 }
+
+func TestFind(t *testing.T) {
+	cases := map[string]struct {
+		data       []int
+		expected   int
+		expectedOk bool
+		seen       []int
+	}{
+		"nil slice": {
+			data:       nil,
+			expected:   0,
+			expectedOk: false,
+			seen:       nil,
+		},
+		"empty slice": {
+			data:       []int{},
+			expected:   0,
+			expectedOk: false,
+			seen:       nil,
+		},
+		"one element not found": {
+			data:       []int{1},
+			expected:   0,
+			expectedOk: false,
+			seen:       []int{1},
+		},
+		"one element found": {
+			data:       []int{2},
+			expected:   2,
+			expectedOk: true,
+			seen:       []int{2},
+		},
+		"multiple elements nothing found": {
+			data:       []int{1, 1, 3},
+			expected:   0,
+			expectedOk: false,
+			seen:       []int{1, 1, 3},
+		},
+		"multiple elements found": {
+			data:       []int{1, 1, 4, 3},
+			expected:   4,
+			expectedOk: true,
+			seen:       []int{1, 1, 4},
+		},
+	}
+
+	for n, c := range cases {
+		t.Run(n, func(t *testing.T) {
+			var seen []int
+
+			v, ok := riffle.From(c.data).Find(func(i int) bool {
+				seen = append(seen, i)
+				return i%2 == 0
+			})
+
+			test.Eq(t, c.expectedOk, ok)
+			test.Eq(t, c.expected, v)
+
+			test.Eq(t, c.seen, seen)
+		})
+	}
+}
