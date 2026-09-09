@@ -144,6 +144,14 @@ func (s Seq[T]) GroupBy[K comparable](fn func(T) K) map[K]Slice[T] {
 	return r
 }
 
+// Distinct yields the elements whose key, as computed by fn, has not been
+// seen earlier: the first element with a given key passes and later ones are
+// dropped. Order is preserved. fn is called once per element, in order,
+// including for the elements that are dropped.
+//
+// Keys are compared the way map keys are: a NaN key never equals another key,
+// so every element with a NaN key passes, and interface keys compare by
+// dynamic type and value.
 func (s Seq[T]) Distinct[K comparable](fn func(T) K) Seq[T] {
 	set := make(map[K]struct{})
 

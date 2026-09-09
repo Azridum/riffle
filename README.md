@@ -64,6 +64,7 @@ Available on both `Slice[T]` and `Seq[T]` unless noted.
 | `Reduce(func(T, T) T) (T, bool)` | fold seeded with first element; false when empty |
 | `Fold(init R, func(R, T) R) R` | fold with explicit seed and accumulator type |
 | `GroupBy(func(T) K) map[K]Slice[T]` with `K comparable` | partition by key; groups keep input order |
+| `Distinct(func(T) K)` with `K comparable` | drop elements whose key was already seen; first occurrence wins, order kept |
 | `Seq()` | `Slice` only. Lazy view |
 | `Collect() Slice[T]` | `Seq` only. Drain to slice |
 

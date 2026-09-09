@@ -96,3 +96,21 @@ func ExampleSeq_GroupBy() {
 	fmt.Println(parity)
 	// Output: map[even:[4 16] odd:[1 9 25]]
 }
+
+func ExampleSlice_Distinct() {
+	byLen := riffle.Of("go", "rust", "zig", "c", "odin").
+		Distinct(func(s string) int { return len(s) })
+
+	fmt.Println(byLen)
+	// Output: [go rust zig c]
+}
+
+func ExampleSeq_Distinct() {
+	names := riffle.Of("Go", "go", "GO", "Rust").
+		Seq().
+		Distinct(strings.ToLower).
+		Collect()
+
+	fmt.Println(names)
+	// Output: [Go Rust]
+}

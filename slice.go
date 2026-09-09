@@ -178,6 +178,16 @@ func (s Slice[T]) GroupBy[K comparable](fn func(T) K) map[K]Slice[T] {
 	return r
 }
 
+// Distinct returns the elements whose key, as computed by fn, has not been
+// seen earlier in s: the first element with a given key is kept and later
+// ones are dropped. Order is preserved. fn is called once per element, in
+// order, including for the elements that are dropped.
+//
+// Keys are compared the way map keys are: a NaN key never equals another key,
+// so every element with a NaN key is kept, and interface keys compare by
+// dynamic type and value.
+//
+// Returns nil when s is empty.
 func (s Slice[T]) Distinct[K comparable](fn func(T) K) Slice[T] {
 	if len(s) == 0 {
 		return nil

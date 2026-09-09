@@ -22,6 +22,7 @@ func double(i int) int   { return i * 2 }
 func even(i int) bool    { return i%2 == 0 }
 func add(i1, i2 int) int { return i1 + i2 }
 func mod10(i int) int    { return i % 10 }
+func half(i int) int     { return i / 2 }
 
 var pair = [2]int{1, 2}
 
@@ -188,6 +189,35 @@ func BenchmarkGroupBy(b *testing.B) {
 		b.Run(fmt.Sprintf("seq/%d", n), func(b *testing.B) {
 			for b.Loop() {
 				riffle.From(xs).Seq().GroupBy(mod10)
+			}
+		})
+	}
+}
+
+func BenchmarkDistinct(b *testing.B) {
+	for _, n := range sizes {
+		xs := input(n)
+		b.Run(fmt.Sprintf("loop/%d", n), func(b *testing.B) {
+			for b.Loop() {
+				seen := make(map[int]struct{}, len(xs))
+				r := make([]int, 0, len(xs))
+				for i := range xs {
+					k := half(xs[i])
+					if _, ok := seen[k]; !ok {
+						seen[k] = struct{}{}
+						r = append(r, xs[i])
+					}
+				}
+			}
+		})
+		b.Run(fmt.Sprintf("slice/%d", n), func(b *testing.B) {
+			for b.Loop() {
+				riffle.From(xs).Distinct(half)
+			}
+		})
+		b.Run(fmt.Sprintf("seq/%d", n), func(b *testing.B) {
+			for b.Loop() {
+				riffle.From(xs).Seq().Distinct(half).Collect()
 			}
 		})
 	}
