@@ -21,6 +21,7 @@ func input(n int) []int {
 func double(i int) int   { return i * 2 }
 func even(i int) bool    { return i%2 == 0 }
 func add(i1, i2 int) int { return i1 + i2 }
+func mod10(i int) int    { return i % 10 }
 
 var pair = [2]int{1, 2}
 
@@ -162,6 +163,31 @@ func BenchmarkChain(b *testing.B) {
 		b.Run(fmt.Sprintf("seq/%d", n), func(b *testing.B) {
 			for b.Loop() {
 				sink, _ = riffle.From(xs).Seq().Map(double).Filter(even).Map(double).Reduce(add)
+			}
+		})
+	}
+}
+
+func BenchmarkGroupBy(b *testing.B) {
+	for _, n := range sizes {
+		xs := input(n)
+		b.Run(fmt.Sprintf("loop/%d", n), func(b *testing.B) {
+			for b.Loop() {
+				r := make(map[int][]int)
+				for _, x := range xs {
+					k := mod10(x)
+					r[k] = append(r[k], x)
+				}
+			}
+		})
+		b.Run(fmt.Sprintf("slice/%d", n), func(b *testing.B) {
+			for b.Loop() {
+				riffle.From(xs).GroupBy(mod10)
+			}
+		})
+		b.Run(fmt.Sprintf("seq/%d", n), func(b *testing.B) {
+			for b.Loop() {
+				riffle.From(xs).Seq().GroupBy(mod10)
 			}
 		})
 	}
