@@ -2,6 +2,7 @@
 
 [![test](https://github.com/Azridum/riffle/actions/workflows/test.yml/badge.svg)](https://github.com/Azridum/riffle/actions/workflows/test.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/Azridum/riffle.svg)](https://pkg.go.dev/github.com/Azridum/riffle)
+[![release](https://img.shields.io/github/v/release/Azridum/riffle)](https://github.com/Azridum/riffle/releases)
 
 Chainable, generic `Map` / `Filter` / `Reduce` / `Fold` / `FlatMap` / `GroupBy` for Go slices and iterators. Two flavours with the same API:
 
@@ -84,7 +85,10 @@ Constructors: `riffle.From([]T)` wraps without copying, `riffle.Of(a, b, c)` bui
 ```sh
 go test ./...                            # unit + property tests (pgregory.net/rapid)
 go test -bench . -run '^$' -benchmem     # loop vs slice vs seq benchmarks
+git config core.hooksPath .githooks      # once per clone: commit message check
 ```
+
+Commit subjects follow [Conventional Commits](https://www.conventionalcommits.org/). A nightly workflow tags a new version from the commits since the last tag (`feat` bumps minor, `fix` bumps patch, `!` or a `BREAKING CHANGE` footer bumps major) and publishes the changelog on the [Releases](https://github.com/Azridum/riffle/releases) page. Other types (`docs`, `test`, `refactor`, `chore`, ...) never trigger a release on their own.
 
 ## License
 

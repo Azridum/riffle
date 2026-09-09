@@ -10,6 +10,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: conventional commits
+        if: github.event_name == 'push'
+        run: |
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            range=HEAD~1..HEAD
+          else
+            range=${{ github.event.before }}..${{ github.sha }}
+          fi
+          bad=$(git log --format=%s "$range" | grep -Ev '^(feat|fix|docs|test|refactor|perf|style|chore|build|ci|revert)(\([a-z0-9-]+\))?!?: .+' || true)
+          if [ -n "$bad" ]; then
+            echo "commits without a Conventional Commits type:"
+            echo "$bad"
+            exit 1
+          fi
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod

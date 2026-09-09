@@ -1,0 +1,5 @@
+#!/bin/sh
+if ! head -n1 "$1" | grep -Eq '^(feat|fix|docs|test|refactor|perf|style|chore|build|ci|revert)(\([a-z0-9-]+\))?!?: .+'; then
+  echo "commit-msg: subject must follow Conventional Commits, e.g. 'feat: add Distinct'" >&2
+  exit 1
+fi
