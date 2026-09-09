@@ -253,3 +253,15 @@ func TestGroupByMatchesSlice(t *testing.T) {
 		test.Eq(t, eager, lazy)
 	})
 }
+
+func TestDistinctMatchesSlice(t *testing.T) {
+	rapid.Check(t, func(t *rapid.T) {
+		xs := rapid.SliceOf(rapid.Int()).Draw(t, "xs")
+		key := func(i int) int { return i }
+
+		eager := riffle.From(xs).Distinct(key)
+		lazy := riffle.From(xs).Seq().Distinct(key).Collect()
+
+		test.Eq(t, eager, lazy)
+	})
+}

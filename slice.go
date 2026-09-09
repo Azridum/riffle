@@ -25,7 +25,9 @@
 // second bool result instead of panicking or returning a pointer.
 package riffle
 
-import "slices"
+import (
+	"slices"
+)
 
 // Slice is an eagerly evaluated []T. Every operation walks the whole slice
 // and returns a new Slice; the receiver is never modified.
@@ -171,6 +173,24 @@ func (s Slice[T]) GroupBy[K comparable](fn func(T) K) map[K]Slice[T] {
 	for i := range s {
 		k := fn(s[i])
 		r[k] = append(r[k], s[i])
+	}
+
+	return r
+}
+
+func (s Slice[T]) Distinct[K comparable](fn func(T) K) Slice[T] {
+	if len(s) == 0 {
+		return nil
+	}
+	set := make(map[K]struct{}, len(s))
+	r := make(Slice[T], 0, len(s))
+
+	for i := range s {
+		k := fn(s[i])
+		if _, ok := set[k]; !ok {
+			set[k] = struct{}{}
+			r = append(r, s[i])
+		}
 	}
 
 	return r

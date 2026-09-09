@@ -579,3 +579,53 @@ func TestGroupByIsAPartition(t *testing.T) {
 		test.Eq(t, len(xs), total)
 	})
 }
+
+func TestDistinct(t *testing.T) {
+	cases := map[string]struct {
+		data     []int
+		expected riffle.Slice[int]
+		seen     []int
+	}{
+		"nil slice": {
+			data:     nil,
+			expected: nil,
+			seen:     nil,
+		},
+		"empty slice": {
+			data:     []int{},
+			expected: nil,
+			seen:     nil,
+		},
+		"one element": {
+			data:     []int{1},
+			expected: []int{1},
+			seen:     []int{1},
+		},
+		"multiple same elements": {
+			data:     []int{1, 1},
+			expected: []int{1},
+			seen:     []int{1, 1},
+		},
+		"multiple different elements": {
+			data:     []int{1, 2},
+			expected: []int{1, 2},
+			seen:     []int{1, 2},
+		},
+		"multiple not next to each other elements": {
+			data:     []int{1, 2, 1, 2},
+			expected: []int{1, 2},
+			seen:     []int{1, 2, 1, 2},
+		},
+	}
+
+	for n, c := range cases {
+		t.Run(n, func(t *testing.T) {
+			var seen []int
+			test.Eq(t, c.expected, riffle.From(c.data).Distinct(func(i int) int {
+				seen = append(seen, i)
+				return i
+			}))
+			test.Eq(t, c.seen, seen)
+		})
+	}
+}

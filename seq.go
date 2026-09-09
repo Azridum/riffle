@@ -143,3 +143,19 @@ func (s Seq[T]) GroupBy[K comparable](fn func(T) K) map[K]Slice[T] {
 
 	return r
 }
+
+func (s Seq[T]) Distinct[K comparable](fn func(T) K) Seq[T] {
+	set := make(map[K]struct{})
+
+	return func(yield func(T) bool) {
+		for v := range s {
+			k := fn(v)
+			if _, ok := set[k]; !ok {
+				set[k] = struct{}{}
+				if !yield(v) {
+					return
+				}
+			}
+		}
+	}
+}
