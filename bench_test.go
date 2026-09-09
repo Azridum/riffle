@@ -208,6 +208,7 @@ func BenchmarkDistinct(b *testing.B) {
 						r = append(r, xs[i])
 					}
 				}
+				sink = len(r)
 			}
 		})
 		b.Run(fmt.Sprintf("slice/%d", n), func(b *testing.B) {
