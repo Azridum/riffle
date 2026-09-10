@@ -265,3 +265,14 @@ func TestDistinctMatchesSlice(t *testing.T) {
 		test.Eq(t, eager, lazy)
 	})
 }
+
+func TestSeqDistinctIsReIterable(t *testing.T) {
+	seq := riffle.Of(1, 2, 1, 3, 2).
+		Seq().
+		Distinct(func(i int) int { return i })
+
+	expected := riffle.Slice[int]{1, 2, 3}
+
+	test.Eq(t, expected, seq.Collect())
+	test.Eq(t, expected, seq.Collect())
+}

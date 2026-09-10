@@ -153,9 +153,8 @@ func (s Seq[T]) GroupBy[K comparable](fn func(T) K) map[K]Slice[T] {
 // so every element with a NaN key passes, and interface keys compare by
 // dynamic type and value.
 func (s Seq[T]) Distinct[K comparable](fn func(T) K) Seq[T] {
-	set := make(map[K]struct{})
-
 	return func(yield func(T) bool) {
+		set := make(map[K]struct{})
 		for v := range s {
 			k := fn(v)
 			if _, ok := set[k]; !ok {
