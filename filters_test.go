@@ -41,3 +41,9 @@ func TestLessThan(t *testing.T) {
 
 	test.Eq(t, []int{1, 2}, result)
 }
+
+func TestLessThanOrEqual(t *testing.T) {
+	result := riffle.Of(1, 2, 3, 4).Filter(riffle.LessThanOrEqual(3))
+
+	test.Eq(t, []int{1, 2, 3}, result)
+}
