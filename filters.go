@@ -32,3 +32,13 @@ func GreaterThan[T cmp.Ordered](val T) func(T) bool {
 		return v > val
 	}
 }
+
+// GreaterThanOrEqual returns a predicate that reports whether a value is greater than or equal to val.
+//
+//	gte := riffle.Of(1, 2, 3, 4).Filter(riffle.GreaterThanOrEqual(2))
+//	// gte == [2 3 4]
+func GreaterThanOrEqual[T cmp.Ordered](val T) func(T) bool {
+	return func(v T) bool {
+		return v >= val
+	}
+}

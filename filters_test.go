@@ -28,3 +28,10 @@ func TestGreater(t *testing.T) {
 	test.Eq(t, []int{3, 4}, result)
 
 }
+
+func TestGreaterThanOrEqual(t *testing.T) {
+	result := riffle.Of(1, 2, 3, 4).Filter(riffle.GreaterThanOrEqual(2))
+
+	test.Eq(t, []int{2, 3, 4}, result)
+
+}
