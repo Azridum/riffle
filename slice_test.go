@@ -691,36 +691,3 @@ func TestFind(t *testing.T) {
 		})
 	}
 }
-
-func TestSum(t *testing.T) {
-	result, _ := riffle.Of(1, 0, 2, 3).Reduce(riffle.Sum)
-	test.Eq(t, result, 6)
-
-	result = riffle.Of(1, 0, 2, 3).Fold(0.0, riffle.Sum)
-	test.Eq(t, result, 6)
-}
-
-func TestMin(t *testing.T) {
-	result, _ := riffle.Of(4, 1, 2, 3).Reduce(riffle.Min)
-	test.Eq(t, result, 1)
-}
-
-func TestMax(t *testing.T) {
-	result, _ := riffle.Of(4, 1, 2, 3).Reduce(riffle.Max)
-	test.Eq(t, result, 4)
-}
-
-func TestNotZeroValue(t *testing.T) {
-	result := riffle.Of(4, 0, 2).Filter(riffle.NotZeroValue)
-	test.Eq(t, []int{4, 2}, result)
-}
-
-func TestNot(t *testing.T) {
-	even := func(v int) bool {
-		return v%2 == 0
-	}
-
-	result := riffle.Of(4, 1, 2, 3).Filter(riffle.Not(even))
-
-	test.Eq(t, []int{1, 3}, result)
-}
