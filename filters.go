@@ -1,5 +1,7 @@
 package riffle
 
+import "cmp"
+
 // NotZeroValue reports whether v is not the zero value of its type.
 //
 //	nonZero := riffle.Of(4, 0, 2).Filter(riffle.NotZeroValue)
@@ -18,5 +20,15 @@ func NotZeroValue[T comparable](v T) bool {
 func Not[T any](fn func(T) bool) func(T) bool {
 	return func(v T) bool {
 		return !fn(v)
+	}
+}
+
+// GreaterThan returns a predicate that reports whether a value is strictly greater than val.
+//
+//	gt := riffle.Of(1, 2, 3, 4).Filter(riffle.GreaterThan(2))
+//	// gt == [3 4]
+func GreaterThan[T cmp.Ordered](val T) func(T) bool {
+	return func(v T) bool {
+		return v > val
 	}
 }

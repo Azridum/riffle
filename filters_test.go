@@ -21,3 +21,10 @@ func TestNot(t *testing.T) {
 
 	test.Eq(t, []int{1, 3}, result)
 }
+
+func TestGreater(t *testing.T) {
+	result := riffle.Of(1, 2, 3, 4).Filter(riffle.GreaterThan(2))
+
+	test.Eq(t, []int{3, 4}, result)
+
+}
