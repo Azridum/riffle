@@ -695,4 +695,7 @@ func TestFind(t *testing.T) {
 func TestAdd(t *testing.T) {
 	result, _ := riffle.Of(1, 0, 2, 3).Reduce(riffle.Sum)
 	test.Eq(t, result, 6)
+
+	result = riffle.Of(1, 0, 2, 3).Fold(0.0, riffle.Sum)
+	test.Eq(t, result, 6)
 }
