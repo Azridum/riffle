@@ -9,3 +9,14 @@ func NotZeroValue[T comparable](v T) bool {
 
 	return v != zero
 }
+
+// Not returns a predicate that negates the result of fn.
+//
+//	even := func(i int) bool { return i%2 == 0 }
+//	odds := riffle.Of(4, 1, 2, 3).Filter(riffle.Not(even))
+//	// odds == [1 3]
+func Not[T any](fn func(T) bool) func(T) bool {
+	return func(v T) bool {
+		return !fn(v)
+	}
+}
