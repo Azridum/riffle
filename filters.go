@@ -42,3 +42,13 @@ func GreaterThanOrEqual[T cmp.Ordered](val T) func(T) bool {
 		return v >= val
 	}
 }
+
+// LessThan returns a predicate that reports whether a value is strictly less than val.
+//
+//	lt := riffle.Of(1, 2, 3, 4).Filter(riffle.LessThan(3))
+//	// lt == [1 2]
+func LessThan[T cmp.Ordered](val T) func(T) bool {
+	return func(v T) bool {
+		return v < val
+	}
+}
