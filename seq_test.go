@@ -276,3 +276,15 @@ func TestSeqDistinctIsReIterable(t *testing.T) {
 	test.Eq(t, expected, seq.Collect())
 	test.Eq(t, expected, seq.Collect())
 }
+
+func TestSeqDistinctStopsWhenConsumerStops(t *testing.T) {
+	calls := 0
+	for range riffle.Of(1, 1, 3).Seq().Distinct(func(i int) int {
+		calls++
+		return i
+	}) {
+		break
+	}
+
+	test.Eq(t, 1, calls)
+}
