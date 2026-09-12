@@ -1,5 +1,9 @@
 package riffle
 
+import (
+	"cmp"
+)
+
 type number interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 |
 		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
@@ -13,4 +17,16 @@ type number interface {
 //	// sum == 6, ok == true
 func Sum[T number](a T, b T) T {
 	return a + b
+}
+
+// Min returns the smaller of a and b.
+//
+//	lowest, ok := riffle.Of(4, 1, 2, 3).Reduce(riffle.Min)
+//	// lowest == 1, ok == true
+func Min[T cmp.Ordered](a T, b T) T {
+	return min(a, b)
+}
+
+func Max[T cmp.Ordered](a T, b T) T {
+	return min(a, b)
 }
