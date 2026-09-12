@@ -27,6 +27,10 @@ func Min[T cmp.Ordered](a T, b T) T {
 	return min(a, b)
 }
 
+// Max returns the highest of a and b.
+//
+//	highest, ok := riffle.Of(4, 1, 2, 3).Reduce(riffle.Max)
+//	// highest == 4, ok == true
 func Max[T cmp.Ordered](a T, b T) T {
-	return min(a, b)
+	return max(a, b)
 }

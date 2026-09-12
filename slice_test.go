@@ -704,3 +704,8 @@ func TestMin(t *testing.T) {
 	result, _ := riffle.Of(4, 1, 2, 3).Reduce(riffle.Min)
 	test.Eq(t, result, 1)
 }
+
+func TestMax(t *testing.T) {
+	result, _ := riffle.Of(4, 1, 2, 3).Reduce(riffle.Max)
+	test.Eq(t, result, 4)
+}
