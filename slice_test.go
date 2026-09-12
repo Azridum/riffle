@@ -709,3 +709,8 @@ func TestMax(t *testing.T) {
 	result, _ := riffle.Of(4, 1, 2, 3).Reduce(riffle.Max)
 	test.Eq(t, result, 4)
 }
+
+func TestNotZeroValue(t *testing.T) {
+	result := riffle.Of(4, 0, 2).Filter(riffle.NotZeroValue)
+	test.Eq(t, []int{4, 2}, result)
+}
