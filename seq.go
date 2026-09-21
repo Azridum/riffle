@@ -233,3 +233,16 @@ func (s Seq[T]) Take(c int) Seq[T] {
 		}
 	}
 }
+
+// TakeWhile returns a Seq that yields consecutive elements from the start of s
+// for which fn reports true. It stops consuming s at the first element for
+// which fn reports false, or when its consumer stops iteration.
+func (s Seq[T]) TakeWhile(fn func(T) bool) Seq[T] {
+	return func(yield func(T) bool) {
+		for v := range s {
+			if !fn(v) || !yield(v) {
+				return
+			}
+		}
+	}
+}

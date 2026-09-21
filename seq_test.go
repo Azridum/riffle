@@ -370,3 +370,58 @@ func TestTakeIsReIterableWithSliceSource(t *testing.T) {
 	test.Eq(t, []int{1, 2}, s.Collect())
 	test.Eq(t, []int{1, 2}, s.Collect())
 }
+
+func TestSeqTakeWhile(t *testing.T) {
+	even := func(v int) bool {
+		return v%2 == 0
+	}
+
+	cases := map[string]struct {
+		data     []int
+		expected []int
+	}{
+		"nil channel": {},
+		"empty channel": {
+			data: []int{},
+		},
+		"one element match": {
+			data:     []int{2},
+			expected: []int{2},
+		},
+		"one element no match": {
+			data:     []int{1},
+			expected: nil,
+		},
+		"multiple elements match": {
+			data:     []int{2, 4, 6, 5, 8},
+			expected: []int{2, 4, 6},
+		},
+	}
+
+	for n, c := range cases {
+		t.Run(n, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(t.Context(), time.Millisecond*100)
+			defer cancel()
+			var s riffle.Seq[int]
+			if c.data != nil {
+				ch := make(chan int)
+				go func() {
+					defer close(ch)
+					for _, v := range c.data {
+						select {
+						case ch <- v:
+						case <-ctx.Done():
+							return
+						}
+					}
+				}()
+
+				s = riffle.FromChanWithContext(ctx, ch)
+			} else {
+				s = riffle.FromChanWithContext[int](ctx, nil)
+			}
+
+			test.Eq(t, c.expected, s.TakeWhile(even).Collect())
+		})
+	}
+}
