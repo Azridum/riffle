@@ -29,8 +29,9 @@ import (
 	"slices"
 )
 
-// Slice is an eagerly evaluated []T. Every operation walks the whole slice
-// and returns a new Slice; the receiver is never modified.
+// Slice is an eagerly evaluated []T. Its operations do not modify the
+// receiver. Map, Filter, FlatMap, GroupBy, and Distinct allocate new results;
+// Take and TakeWhile return views into the receiver.
 //
 // A Slice is a plain slice type, so []T and Slice[T] convert freely and all
 // the usual indexing, slicing, len and range work on it.
@@ -85,6 +86,42 @@ func (s Slice[T]) Filter(fn func(T) bool) Slice[T] {
 	}
 
 	return r
+}
+
+// Take returns at most the first c elements of s. When c is zero or negative,
+// or s is empty, it returns nil.
+//
+// The result is a view that shares backing storage with s.
+func (s Slice[T]) Take(c int) Slice[T] {
+	if c <= 0 || len(s) == 0 {
+		return nil
+	}
+	if c >= len(s) {
+		return s
+	}
+
+	return s[:c]
+}
+
+// TakeWhile returns consecutive elements from the start of s for which fn
+// reports true. It stops at the first element for which fn reports false.
+// Returns nil when s is empty or its first element does not match.
+//
+// The result is a view that shares backing storage with s.
+func (s Slice[T]) TakeWhile(fn func(T) bool) Slice[T] {
+	for i := range s {
+		if !fn(s[i]) {
+			if i == 0 {
+				return nil
+			}
+			return s[:i]
+		}
+	}
+	if len(s) == 0 {
+		return nil
+	}
+
+	return s
 }
 
 // First returns the first element and true, or the zero value and false when

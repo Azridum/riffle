@@ -161,6 +161,102 @@ func TestSliceFilterDoesNotCallFnOnEmpty(t *testing.T) {
 	test.Eq(t, 0, calls)
 }
 
+func TestSliceTake(t *testing.T) {
+	cases := map[string]struct {
+		data     []int
+		count    int
+		expected riffle.Slice[int]
+	}{
+		"nil slice": {
+			count: 1,
+		},
+		"empty slice": {
+			data:  []int{},
+			count: 1,
+		},
+		"negative count": {
+			data:  []int{1, 2, 3},
+			count: -1,
+		},
+		"zero count": {
+			data:  []int{1, 2, 3},
+			count: 0,
+		},
+		"one element": {
+			data:     []int{1, 2, 3},
+			count:    1,
+			expected: []int{1},
+		},
+		"all elements": {
+			data:     []int{1, 2, 3},
+			count:    3,
+			expected: []int{1, 2, 3},
+		},
+		"more than length": {
+			data:     []int{1, 2, 3},
+			count:    4,
+			expected: []int{1, 2, 3},
+		},
+	}
+
+	for n, c := range cases {
+		t.Run(n, func(t *testing.T) {
+			test.Eq(t, c.expected, riffle.From(c.data).Take(c.count))
+		})
+	}
+}
+
+func TestSliceTakeSharesBackingStorage(t *testing.T) {
+	data := []int{1, 2, 3}
+	r := riffle.From(data).Take(2)
+	r[0] = 10
+
+	test.Eq(t, []int{10, 2, 3}, data)
+}
+
+func TestSliceTakeWhile(t *testing.T) {
+	even := func(v int) bool { return v%2 == 0 }
+	cases := map[string]struct {
+		data     []int
+		expected riffle.Slice[int]
+	}{
+		"nil slice": {},
+		"empty slice": {
+			data: []int{},
+		},
+		"first element does not match": {
+			data: []int{1, 2, 4},
+		},
+		"all elements match": {
+			data:     []int{2, 4, 6},
+			expected: []int{2, 4, 6},
+		},
+		"stops at first non-match": {
+			data:     []int{2, 4, 1, 6},
+			expected: []int{2, 4},
+		},
+	}
+
+	for n, c := range cases {
+		t.Run(n, func(t *testing.T) {
+			test.Eq(t, c.expected, riffle.From(c.data).TakeWhile(even))
+		})
+	}
+}
+
+func TestSliceTakeWhileStopsAtFirstNonMatchAndSharesBackingStorage(t *testing.T) {
+	data := []int{2, 4, 1, 6}
+	var seen []int
+	r := riffle.From(data).TakeWhile(func(v int) bool {
+		seen = append(seen, v)
+		return v%2 == 0
+	})
+	r[0] = 10
+
+	test.Eq(t, []int{2, 4, 1}, seen)
+	test.Eq(t, []int{10, 4, 1, 6}, data)
+}
+
 func TestSliceFirst(t *testing.T) {
 	cases := map[string]struct {
 		data       []int
