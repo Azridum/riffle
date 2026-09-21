@@ -1,10 +1,12 @@
 package riffle_test
 
 import (
+	"context"
 	"iter"
 	"slices"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/Azridum/riffle"
 	"github.com/shoenig/test"
@@ -287,4 +289,84 @@ func TestSeqDistinctStopsWhenConsumerStops(t *testing.T) {
 	}
 
 	test.Eq(t, 1, calls)
+}
+
+func TestSeqChannelsTake(t *testing.T) {
+	cases := map[string]struct {
+		data     []int
+		take     int
+		expected []int
+	}{
+		"nil channel": {
+			take: 1,
+		},
+		"empty channel": {
+			data: []int{},
+			take: 1,
+		},
+		"take one from channel with one element": {
+			data:     []int{1},
+			take:     1,
+			expected: []int{1},
+		},
+		"take one from channel with multiple elements": {
+			data:     []int{1, 2, 3},
+			take:     1,
+			expected: []int{1},
+		},
+		"take multiple from channel with one elements": {
+			data:     []int{1},
+			take:     2,
+			expected: []int{1},
+		},
+		"take multiple from channel with multiple elements": {
+			data:     []int{1, 2, 3},
+			take:     2,
+			expected: []int{1, 2},
+		},
+		"take zero from channel with multiple elements": {
+			data:     []int{1, 2, 3},
+			take:     0,
+			expected: nil,
+		},
+		"take negative from channel with multiple elements": {
+			data:     []int{1, 2, 3},
+			take:     -1,
+			expected: nil,
+		},
+	}
+
+	for n, c := range cases {
+		t.Run(n, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(t.Context(), time.Millisecond*100)
+			defer cancel()
+			var s riffle.Seq[int]
+			if c.data != nil {
+				ch := make(chan int)
+				go func() {
+					defer close(ch)
+					for _, v := range c.data {
+						select {
+						case ch <- v:
+						case <-ctx.Done():
+							return
+						}
+					}
+				}()
+
+				s = riffle.FromChanWithContext(ctx, ch)
+			} else {
+				s = riffle.FromChanWithContext[int](ctx, nil)
+			}
+
+			test.Eq(t, c.expected, s.Take(c.take).Collect())
+		})
+	}
+}
+
+func TestTakeIsReIterableWithSliceSource(t *testing.T) {
+	s := riffle.Of(1, 2, 3).Seq().Take(2)
+
+	test.Eq(t, []int{1, 2}, s.Collect())
+	test.Eq(t, []int{1, 2}, s.Collect())
 }

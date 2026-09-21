@@ -210,3 +210,26 @@ func (s Seq[T]) Distinct[K comparable](fn func(T) K) Seq[T] {
 		}
 	}
 }
+
+// Take returns a Seq that yields at most c elements from s, in order. When c
+// is zero or negative, it yields no elements and does not consume s.
+//
+// Take is lazy and stops consuming s as soon as it has yielded c elements or
+// its consumer stops iteration.
+func (s Seq[T]) Take(c int) Seq[T] {
+	return func(yield func(T) bool) {
+		if c <= 0 {
+			return
+		}
+		remaining := c
+		for v := range s {
+			if !yield(v) {
+				return
+			}
+			remaining--
+			if remaining == 0 {
+				return
+			}
+		}
+	}
+}
