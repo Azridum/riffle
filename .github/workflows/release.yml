@@ -2,7 +2,7 @@ name: release
 
 on:
   schedule:
-    - cron: '0 4 * * *' # 04:00 UTC, nightly
+    - cron: '17 2 * * *'
   workflow_dispatch:
 
 permissions:
