@@ -45,6 +45,11 @@ for v := range riffle.From(xs).Seq().Filter(pred) {
     fmt.Println(v)
 }
 
+// Channel sources stay lazy too; Take stops after 100 received values.
+for event := range riffle.FromChan(events).Filter(isRelevant).Take(100) {
+    handle(event)
+}
+
 // Convert between them
 s.Seq()       // Slice -> Seq (no copy, reads s at iteration time)
 seq.Collect() // Seq -> Slice
@@ -60,6 +65,8 @@ Available on both `Slice[T]` and `Seq[T]` unless noted.
 | `Filter(func(T) bool)` | keep elements where fn is true |
 | `FlatMap(func(T) S) ...[R]` with `S ~[]R` | map to slices, concatenate |
 | `FlatMapSeq(func(T) S)` with `S ~func(func(R) bool)` | `Seq` only. Map to iterators, flatten lazily |
+| `Take(int)` | `Seq` only. Yield at most the given number of leading elements |
+| `TakeWhile(func(T) bool)` | `Seq` only. Yield leading elements while the predicate is true |
 | `First() (T, bool)` | first element. `Seq` pulls exactly one |
 | `Last() (T, bool)` | `Slice` only |
 | `Reduce(func(T, T) T) (T, bool)` | fold seeded with first element; false when empty |
@@ -69,14 +76,15 @@ Available on both `Slice[T]` and `Seq[T]` unless noted.
 | `Seq()` | `Slice` only. Lazy view |
 | `Collect() Slice[T]` | `Seq` only. Drain to slice |
 
-Constructors: `riffle.From([]T)` wraps without copying, `riffle.Of(a, b, c)` builds from arguments.
+Constructors: `riffle.From([]T)` wraps without copying, `riffle.Of(a, b, c)` builds from arguments. `riffle.FromChan(<-chan T)` adapts a channel as a `Seq`; `riffle.FromChanWithContext(ctx, ch)` also stops a pending receive when `ctx` is canceled.
 
 ## Semantics worth knowing
 
 - **Empty results are `nil`**, not `[]T{}`. `Map`, `Filter`, `FlatMap` and `Collect` all return `nil` when there is nothing to return. `GroupBy` returns a `nil` map on empty input; indexing it is fine, writing to it is not.
-- **`Slice` and `Seq` always agree.** Every op is property-tested so that `s.Op(f)` equals `s.Seq().Op(f).Collect()`.
+- **Shared `Slice` and `Seq` operations always agree.** Every shared op is property-tested so that `s.Op(f)` equals `s.Seq().Op(f).Collect()`.
 - **`Seq` is fully lazy.** Building a chain calls none of your functions. Consumers that stop early (`First`, `break` in a range loop) stop every upstream stage.
-- **`Seq` is re-iterable.** Each consumption re-runs the pipeline from the source. Not safe for concurrent use unless the source is.
+- **`Seq` is re-iterable, except channel sources.** Each consumption re-runs the pipeline from the source. `FromChan` and `FromChanWithContext` consume their channels and therefore cannot restart them. `Seq` is not safe for concurrent use unless its source is.
+- **Channel producers own their lifetime.** Stopping a channel-backed `Seq` early stops its receives, but it does not stop a sender blocked on the channel. Have producers observe their own cancellation signal; `FromChanWithContext` can interrupt a blocked receive when its non-nil context is canceled.
 - **`From` does not copy.** Mutating the input afterwards is visible through the `Slice` and through any `Seq` built from it.
 - **`Reduce` vs `Fold`.** `Reduce` seeds from the first element and reports `false` on empty input. `Fold` takes an explicit seed, can change type, and returns the seed on empty input.
 
