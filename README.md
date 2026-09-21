@@ -65,8 +65,8 @@ Available on both `Slice[T]` and `Seq[T]` unless noted.
 | `Filter(func(T) bool)` | keep elements where fn is true |
 | `FlatMap(func(T) S) ...[R]` with `S ~[]R` | map to slices, concatenate |
 | `FlatMapSeq(func(T) S)` with `S ~func(func(R) bool)` | `Seq` only. Map to iterators, flatten lazily |
-| `Take(int)` | `Seq` only. Yield at most the given number of leading elements |
-| `TakeWhile(func(T) bool)` | `Seq` only. Yield leading elements while the predicate is true |
+| `Take(int)` | yield at most the given number of leading elements |
+| `TakeWhile(func(T) bool)` | yield leading elements while the predicate is true |
 | `First() (T, bool)` | first element. `Seq` pulls exactly one |
 | `Last() (T, bool)` | `Slice` only |
 | `Reduce(func(T, T) T) (T, bool)` | fold seeded with first element; false when empty |
@@ -80,7 +80,7 @@ Constructors: `riffle.From([]T)` wraps without copying, `riffle.Of(a, b, c)` bui
 
 ## Semantics worth knowing
 
-- **Empty results are `nil`**, not `[]T{}`. `Map`, `Filter`, `FlatMap` and `Collect` all return `nil` when there is nothing to return. `GroupBy` returns a `nil` map on empty input; indexing it is fine, writing to it is not.
+- **Empty results are `nil`**, not `[]T{}`. `Map`, `Filter`, `FlatMap`, `Take`, `TakeWhile`, and `Collect` all return `nil` when there is nothing to return. `GroupBy` returns a `nil` map on empty input; indexing it is fine, writing to it is not.
 - **Shared `Slice` and `Seq` operations always agree.** Every shared op is property-tested so that `s.Op(f)` equals `s.Seq().Op(f).Collect()`.
 - **`Seq` is fully lazy.** Building a chain calls none of your functions. Consumers that stop early (`First`, `break` in a range loop) stop every upstream stage.
 - **`Seq` is re-iterable, except channel sources.** Each consumption re-runs the pipeline from the source. `FromChan` and `FromChanWithContext` consume their channels and therefore cannot restart them. `Seq` is not safe for concurrent use unless its source is.
