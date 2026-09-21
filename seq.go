@@ -1,6 +1,7 @@
 package riffle
 
 import (
+	"context"
 	"iter"
 	"slices"
 )
@@ -33,6 +34,30 @@ func FromChan[T any](ch <-chan T) Seq[T] {
 		for v := range ch {
 			if !yield(v) {
 				return
+			}
+		}
+	}
+}
+
+// FromChanWithContext returns a Seq that yields values received from ch until
+// ch is closed or ctx is canceled. Cancellation can stop a pending receive;
+// it does not stop a sender blocked trying to send on ch.
+//
+// The returned Seq is single-use: each iteration consumes values from ch and
+// cannot restart it. Stopping iteration early, for example with break or
+// [Seq.First], also stops this Seq from receiving further values.
+//
+// ctx must not be nil.
+func FromChanWithContext[T any](ctx context.Context, ch <-chan T) Seq[T] {
+	return func(yield func(T) bool) {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case v, open := <-ch:
+				if !open || !yield(v) {
+					return
+				}
 			}
 		}
 	}
