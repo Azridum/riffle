@@ -19,6 +19,25 @@ import (
 // its source is.
 type Seq[T any] iter.Seq[T]
 
+// FromChan returns a Seq that yields values received from ch until ch is
+// closed. The returned Seq is single-use: channel values are consumed as it is
+// iterated, so subsequent iterations continue from the channel's current
+// position rather than restarting it.
+//
+// Stopping iteration early, for example with break or [Seq.First], stops this
+// Seq from receiving further values. It does not stop a sender that is blocked
+// trying to send on ch; the sender is responsible for its own cancellation or
+// channel lifetime.
+func FromChan[T any](ch <-chan T) Seq[T] {
+	return func(yield func(T) bool) {
+		for v := range ch {
+			if !yield(v) {
+				return
+			}
+		}
+	}
+}
+
 // Collect drains s into a Slice. Returns nil when s yields no elements.
 func (s Seq[T]) Collect() Slice[T] {
 	return slices.Collect(iter.Seq[T](s))
