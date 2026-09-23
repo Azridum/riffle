@@ -260,6 +260,9 @@ func (s Slice[T]) Find(fn func(T) bool) (T, bool) {
 	return zero, false
 }
 
+// All reports whether fn returns true for every element of s. It evaluates
+// elements in order and stops at the first element for which fn returns false.
+// Returns true when s is empty.
 func (s Slice[T]) All(fn func(T) bool) bool {
 	for i := range s {
 		if !fn(s[i]) {
