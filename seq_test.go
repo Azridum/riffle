@@ -425,3 +425,14 @@ func TestSeqTakeWhile(t *testing.T) {
 		})
 	}
 }
+
+func TestAllMatchesSlice(t *testing.T) {
+	rapid.Check(t, func(t *rapid.T) {
+		xs := rapid.SliceOf(rapid.Int()).Draw(t, "xs")
+
+		eager := riffle.From(xs).All(even)
+		lazy := riffle.From(xs).Seq().All(even)
+
+		test.Eq(t, eager, lazy)
+	})
+}

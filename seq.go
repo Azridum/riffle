@@ -246,3 +246,16 @@ func (s Seq[T]) TakeWhile(fn func(T) bool) Seq[T] {
 		}
 	}
 }
+
+// All reports whether fn returns true for every element of s. It consumes
+// elements in order and stops at the first element for which fn returns false.
+// Returns true when s is empty.
+func (s Seq[T]) All(fn func(T) bool) bool {
+	for v := range s {
+		if !fn(v) {
+			return false
+		}
+	}
+
+	return true
+}
