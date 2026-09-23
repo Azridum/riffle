@@ -259,3 +259,13 @@ func (s Slice[T]) Find(fn func(T) bool) (T, bool) {
 	var zero T
 	return zero, false
 }
+
+func (s Slice[T]) All(fn func(T) bool) bool {
+	for i := range s {
+		if !fn(s[i]) {
+			return false
+		}
+	}
+
+	return true
+}

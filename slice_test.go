@@ -787,3 +787,49 @@ func TestFind(t *testing.T) {
 		})
 	}
 }
+
+func TestSliceAll(t *testing.T) {
+	cases := map[string]struct {
+		data     []int
+		expected bool
+	}{
+		"nil slice": {
+			data:     nil,
+			expected: true,
+		},
+		"empty slice": {
+			data:     []int{},
+			expected: true,
+		},
+		"one element satisfies": {
+			data:     []int{9},
+			expected: true,
+		},
+		"one element not satisfies": {
+			data:     []int{4},
+			expected: false,
+		},
+		"multiple elements satisfies": {
+			data:     []int{9, 8, 7, 6},
+			expected: true,
+		},
+		"multiple elements not satisfies": {
+			data:     []int{1, 2, 3, 4},
+			expected: false,
+		},
+		"only one element satisfies": {
+			data:     []int{1, 2, 6, 3, 4},
+			expected: false,
+		},
+		"only one element not satisfies": {
+			data:     []int{9, 8, 5, 7, 6},
+			expected: false,
+		},
+	}
+
+	for n, c := range cases {
+		t.Run(n, func(t *testing.T) {
+			test.Eq(t, c.expected, riffle.From(c.data).All(riffle.GreaterThan(5)))
+		})
+	}
+}
